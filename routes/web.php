@@ -13,6 +13,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [\App\Http\Controllers\VehicleController::class, 'index']);
+Route::get('/vehicles/create', [\App\Http\Controllers\VehicleController::class, 'create']);
+
+
+
+//Route::get('/', function () {
+//    return view('home');
+//});
+
+//Route::get('/products', [ProductController::class, 'index']);
