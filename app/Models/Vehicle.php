@@ -9,6 +9,13 @@ class Vehicle extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'plates',
+        'model_id',
+        'fuel_tank_volume',
+        'average_fuel_consumption',
+    ];
+
     public function vehicleModel()
     {
         return $this->hasOne(VehicleModel::class, 'id', 'model_id');

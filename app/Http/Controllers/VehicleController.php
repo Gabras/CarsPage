@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vehicle;
+use App\Models\VehicleModel;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
 
 class VehicleController extends Controller
@@ -34,11 +38,41 @@ class VehicleController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'plates' => 'required',
+            'manufacturer_name' => 'required',
+            'model_name' => 'required',
+            'fuel_tank_volume' => 'required|numeric',
+            'average_fuel_consumption' => 'required|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect('vehicles/create')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $data = request()->all();
+
+        $vehicleModel = VehicleModel::firstOrCreate(
+            ['manufacturer_name' => $data['manufacturer_name'], 'model_name' => $data['model_name']],
+        );
+
+        Vehicle::create(
+            [
+                'plates' => $data['plates'],
+                'model_id' => $vehicleModel->id,
+                'fuel_tank_volume'=> $data['fuel_tank_volume'],
+                'average_fuel_consumption' => $data['average_fuel_consumption']
+            ]
+        );
+
+        return Redirect::to('/')->with('success','Vehicle created successfully.');
+
     }
 
     /**

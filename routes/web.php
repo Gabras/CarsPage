@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [\App\Http\Controllers\VehicleController::class, 'index']);
 Route::get('/vehicles/create', [\App\Http\Controllers\VehicleController::class, 'create']);
+Route::post('/vehicles/create', [\App\Http\Controllers\VehicleController::class, 'store']);
+
 
 
 

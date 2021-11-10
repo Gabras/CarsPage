@@ -7,7 +7,17 @@
     <h1>Naujas transportas</h1>
     <hr class="divider">
 
-    {{ Form::open(array('url' => '/')) }}
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{ Form::open(array('url' => '/vehicles/create')) }}
     <div class="form-group">
         {{ Form::label('plates', 'Valstybinis numeris', array('class' => 'h4')) }}
         {{ Form::text('plates', '') }}
