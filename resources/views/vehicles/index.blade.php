@@ -29,7 +29,10 @@
                 <td>{{ $value->average_fuel_consumption }}</td>
                 <td>{{ $value->getDistance() }} km</td>
                 <td scope="col">
-                    <a class="btn btn-outline-danger btn-lg" href="{{ URL::to('vehicles/' . $value->id. '/delete') }}"><i class="bi bi-trash-fill"></i></a>
+                    {{ Form::open(array('url' => 'vehicles/' . $value->id . '/delete')) }}
+                        {{ Form::hidden('_method', 'DELETE') }}
+                        {{ Form::button('<i class="bi bi-trash-fill"></i>', array('class' => 'btn btn-outline-danger btn-lg', 'type' => 'submit')) }}
+                    {{ Form::close() }}
                     <a class="btn btn-outline-warning btn-lg" href="{{ URL::to('vehicles/' . $value->id . '/edit') }}"><i class="bi bi-pencil-fill"></i></a>
                 </td>
             </tr>

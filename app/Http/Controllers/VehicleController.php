@@ -73,7 +73,7 @@ class VehicleController extends Controller
             ]
         );
 
-        return Redirect::to('/')->with('success','Vehicle created successfully.');
+        return Redirect::to('/')->with('success','Vehicle '. $data['plates'] .'  created successfully.');
     }
 
     /**
@@ -128,8 +128,6 @@ class VehicleController extends Controller
 
         $data = request()->all();
 
-        //dd($data['vehicleModel']['manufacturer_name']);
-
         $vehicleModel = VehicleModel::firstOrCreate(
             ['manufacturer_name' => $data['vehicleModel']['manufacturer_name'], 'model_name' => $data['vehicleModel']['model_name']],
         );
@@ -149,11 +147,21 @@ class VehicleController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param Vehicle $vehicle
-     * @return \Illuminate\Http\Response
+     * @param $id
+     * @return RedirectResponse
      */
-    public function destroy(Vehicle $vehicle)
+    public function destroy($id)
     {
-        //
+        $vehicle = Vehicle::find($id);
+        $vehiclesWithSameModels = Vehicle::find($id);
+
+        $vehicle->delete();
+
+        if($vehiclesWithSameModels->count() == 0) {
+            $model = VehicleModel::find($vehicle->model_id);
+            $model->delete();
+        }
+
+        return Redirect::to('/')->with('success','Vehicle '. $vehicle['plates'] .' deleted successfully.');
     }
 }
