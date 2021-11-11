@@ -6,7 +6,6 @@ use App\Models\Vehicle;
 use App\Models\VehicleModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
@@ -24,6 +23,28 @@ class VehicleController extends Controller
 
         return View::make('vehicles.index')
             ->with('vehicles', $vehicles);
+    }
+
+    public function liveSearch(Request $request)
+    {
+        $searchParam = $request->get('searchParam');
+
+        if($searchParam != '')
+        {
+            $vehicles = Vehicle::whereHas('vehicleModel', function ($relation) use ($searchParam) {
+                    return $relation
+                        ->where('manufacturer_name', 'like', '%'.$searchParam.'%')
+                        ->orWhere('model_name', 'like', '%'.$searchParam.'%');
+                })
+                ->orWhere('plates', 'like', '%'.$searchParam.'%')
+                ->get();
+        }  else {
+            $vehicles = Vehicle::with('vehicleModel')->get();
+        }
+
+        $returnHTML = View::make('vehicles.table')
+            ->with('vehicles', $vehicles)->render();
+        return response()->json(array('success' => true, 'html'=>$returnHTML));
     }
 
     /**
@@ -74,17 +95,6 @@ class VehicleController extends Controller
         );
 
         return Redirect::to('/')->with('success','Vehicle '. $data['plates'] .'  created successfully.');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param Vehicle $vehicle
-     * @return void
-     */
-    public function show(Vehicle $vehicle)
-    {
-        //
     }
 
     /**

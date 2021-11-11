@@ -20,3 +20,4 @@ Route::post('/vehicles/create', [VehicleController::class, 'store']);
 Route::get('/vehicles/{id}/edit', [VehicleController::class, 'edit']);
 Route::put('/vehicles/{id}/edit', [VehicleController::class, 'update'])->name('vehicle.update');
 Route::delete('/vehicles/{id}/delete', [VehicleController::class, 'destroy']);
+Route::get('/search', [VehicleController::class, 'liveSearch'])->name('search.action');
