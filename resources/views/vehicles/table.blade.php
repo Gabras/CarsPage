@@ -6,7 +6,7 @@
         <td>{{ $value->fuel_tank_volume }}</td>
         <td>{{ $value->average_fuel_consumption }}</td>
         <td>{{ $value->getDistance() }} km</td>
-        <td scope="col">
+        <td>
             {{ Form::open(array('url' => 'vehicles/' . $value->id . '/delete')) }}
             {{ Form::hidden('_method', 'DELETE') }}
             {{ Form::button('<i class="bi bi-trash-fill"></i>', array('class' => 'btn btn-outline-danger btn-lg', 'type' => 'submit')) }}

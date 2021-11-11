@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\View;
 
 class VehicleController extends Controller
 {
+    private string $message = 'Privalote įvesti transporto priemonės';
+
     /**
      * Display a listing of the resource.
      *
@@ -29,22 +31,21 @@ class VehicleController extends Controller
     {
         $searchParam = $request->get('searchParam');
 
-        if($searchParam != '')
-        {
+        if ($searchParam != '') {
             $vehicles = Vehicle::whereHas('vehicleModel', function ($relation) use ($searchParam) {
-                    return $relation
-                        ->where('manufacturer_name', 'like', '%'.$searchParam.'%')
-                        ->orWhere('model_name', 'like', '%'.$searchParam.'%');
-                })
-                ->orWhere('plates', 'like', '%'.$searchParam.'%')
+                return $relation
+                    ->where('manufacturer_name', 'like', '%' . $searchParam . '%')
+                    ->orWhere('model_name', 'like', '%' . $searchParam . '%');
+            })
+                ->orWhere('plates', 'like', '%' . $searchParam . '%')
                 ->get();
-        }  else {
+        } else {
             $vehicles = Vehicle::with('vehicleModel')->get();
         }
 
         $returnHTML = View::make('vehicles.table')
             ->with('vehicles', $vehicles)->render();
-        return response()->json(array('success' => true, 'html'=>$returnHTML));
+        return response()->json(array('success' => true, 'html' => $returnHTML));
     }
 
     /**
@@ -65,13 +66,22 @@ class VehicleController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'plates' => 'required',
-            'manufacturer_name' => 'required',
-            'model_name' => 'required',
-            'fuel_tank_volume' => 'required|numeric',
-            'average_fuel_consumption' => 'required|numeric',
-        ]);
+        $validator = Validator::make($request->all(),
+            [
+                'plates' => 'required',
+                'manufacturer_name' => 'required',
+                'model_name' => 'required',
+                'fuel_tank_volume' => 'required|numeric',
+                'average_fuel_consumption' => 'required|numeric',
+            ],
+            [
+                'plates.required' => $this->message . ' valstybinius numerius!',
+                'manufacturer_name.required' => $this->message . ' gamintoją!',
+                'model_name.required' => $this->message . ' modelį!',
+                'fuel_tank_volume.required' => $this->message . ' kuro bako talpą!',
+                'average_fuel_consumption.required' => $this->message . ' vidutines kuro sanaudos!',
+            ]
+        );
 
         if ($validator->fails()) {
             return redirect('vehicles/create')
@@ -89,12 +99,12 @@ class VehicleController extends Controller
             [
                 'plates' => $data['plates'],
                 'model_id' => $vehicleModel->id,
-                'fuel_tank_volume'=> $data['fuel_tank_volume'],
+                'fuel_tank_volume' => $data['fuel_tank_volume'],
                 'average_fuel_consumption' => $data['average_fuel_consumption']
             ]
         );
 
-        return Redirect::to('/')->with('success','Vehicle '. $data['plates'] .'  created successfully.');
+        return Redirect::to('/')->with('success', 'Transporto priemonė ' . $data['plates'] . '  pridėta.');
     }
 
     /**
@@ -120,18 +130,30 @@ class VehicleController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'plates' => 'required',
-            'vehicleModel' => [
-                'manufacturer_name' => 'required',
-                'model_name' => 'required'
-            ],
-            'fuel_tank_volume' => 'required|numeric',
-            'average_fuel_consumption' => 'required|numeric',
-        ]);
+        $validator = Validator::make($request->all(),
+            [
+                'plates' => 'required',
+                'vehicleModel' => [
+                    'manufacturer_name' => 'required',
+                    'model_name' => 'required'
+                ],
+                'fuel_tank_volume' => 'required|numeric',
+                'average_fuel_consumption' => 'required|numeric',
+            ]
+            ,
+            [
+                'plates.required' => $this->message . ' valstybinius numerius!',
+                'vehicleModel' => [
+                    'manufacturer_name.required' => $this->message . ' gamintoją!',
+                    'model_name.required' => $this->message . ' modelį!',
+                ],
+                'fuel_tank_volume.required' => $this->message . ' kuro bako talpą!',
+                'average_fuel_consumption.required' => $this->message . ' vidutines kuro sanaudos!',
+            ]
+        );
 
         if ($validator->fails()) {
-            return redirect('vehicles/'.$id.'/edit')
+            return redirect('vehicles/' . $id . '/edit')
                 ->withErrors($validator)
                 ->withInput();
         }
@@ -142,16 +164,17 @@ class VehicleController extends Controller
             ['manufacturer_name' => $data['vehicleModel']['manufacturer_name'], 'model_name' => $data['vehicleModel']['model_name']],
         );
 
-        Vehicle::find($id)->update(
+        Vehicle::find($id)
+            ->update(
             [
                 'plates' => $data['plates'],
                 'model_id' => $vehicleModel->id,
-                'fuel_tank_volume'=> $data['fuel_tank_volume'],
+                'fuel_tank_volume' => $data['fuel_tank_volume'],
                 'average_fuel_consumption' => $data['average_fuel_consumption']
             ]
         );
 
-        return Redirect::to('/')->with('success','Vehicle '. $data['plates'] .' updated successfully.');
+        return Redirect::to('/')->with('success', 'Transporto priemonė ' . $data['plates'] . ' atnaujinta.');
     }
 
     /**
@@ -163,15 +186,15 @@ class VehicleController extends Controller
     public function destroy($id)
     {
         $vehicle = Vehicle::find($id);
-        $vehiclesWithSameModels = Vehicle::find($id);
+        $vehiclesWithSameModels = Vehicle::where('model_id', '=', $vehicle->model_id)->count();
 
         $vehicle->delete();
 
-        if($vehiclesWithSameModels->count() == 0) {
+        if ($vehiclesWithSameModels <= 1) {
             $model = VehicleModel::find($vehicle->model_id);
             $model->delete();
         }
 
-        return Redirect::to('/')->with('success','Vehicle '. $vehicle['plates'] .' deleted successfully.');
+        return Redirect::to('/')->with('success', 'Transporto priemonė ' . $vehicle['plates'] . ' pašalinta.');
     }
 }
