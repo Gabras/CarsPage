@@ -1,6 +1,11 @@
 @extends('base')
 @section('content')
 <div class="container mt-5">
+    @if ($message = Session::get('success'))
+        <div class="alert alert-success">
+            <p>{{ $message }}</p>
+        </div>
+    @endif
     <a class="btn btn-outline-success btn-lg" href="{{ URL::to('vehicles/create') }}">Sukurti naują</a>
     <table class="table table-striped">
         <thead>

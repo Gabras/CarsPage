@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Vehicle;
 use App\Models\VehicleModel;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Redirect;
@@ -22,7 +23,8 @@ class VehicleController extends Controller
         $vehicles = Vehicle::with('vehicleModel')->get();
 
         return View::make('vehicles.index')
-            ->with('vehicles', $vehicles);    }
+            ->with('vehicles', $vehicles);
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -37,8 +39,8 @@ class VehicleController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function store(Request $request)
     {
@@ -72,14 +74,13 @@ class VehicleController extends Controller
         );
 
         return Redirect::to('/')->with('success','Vehicle created successfully.');
-
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Vehicle  $vehicle
-     * @return \Illuminate\Http\Response
+     * @param Vehicle $vehicle
+     * @return void
      */
     public function show(Vehicle $vehicle)
     {
@@ -89,30 +90,66 @@ class VehicleController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Vehicle  $vehicle
-     * @return \Illuminate\Http\Response
+     * @param $id
+     * @return \Illuminate\Contracts\View\View
      */
-    public function edit(Vehicle $vehicle)
+    public function edit($id)
     {
-        //
+        $vehicle = Vehicle::with('vehicleModel')->find($id);
+
+        return View::make('vehicles.edit')
+            ->with('vehicle', $vehicle);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Vehicle  $vehicle
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param $id
+     * @return RedirectResponse
      */
-    public function update(Request $request, Vehicle $vehicle)
+    public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'plates' => 'required',
+            'vehicleModel' => [
+                'manufacturer_name' => 'required',
+                'model_name' => 'required'
+            ],
+            'fuel_tank_volume' => 'required|numeric',
+            'average_fuel_consumption' => 'required|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect('vehicles/'.$id.'/edit')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $data = request()->all();
+
+        //dd($data['vehicleModel']['manufacturer_name']);
+
+        $vehicleModel = VehicleModel::firstOrCreate(
+            ['manufacturer_name' => $data['vehicleModel']['manufacturer_name'], 'model_name' => $data['vehicleModel']['model_name']],
+        );
+
+        Vehicle::find($id)->update(
+            [
+                'plates' => $data['plates'],
+                'model_id' => $vehicleModel->id,
+                'fuel_tank_volume'=> $data['fuel_tank_volume'],
+                'average_fuel_consumption' => $data['average_fuel_consumption']
+            ]
+        );
+
+        return Redirect::to('/')->with('success','Vehicle '. $data['plates'] .' updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Vehicle  $vehicle
+     * @param Vehicle $vehicle
      * @return \Illuminate\Http\Response
      */
     public function destroy(Vehicle $vehicle)

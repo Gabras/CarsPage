@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,9 +14,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', [\App\Http\Controllers\VehicleController::class, 'index']);
-Route::get('/vehicles/create', [\App\Http\Controllers\VehicleController::class, 'create']);
-Route::post('/vehicles/create', [\App\Http\Controllers\VehicleController::class, 'store']);
+Route::get('/', [VehicleController::class, 'index']);
+Route::get('/vehicles/create', [VehicleController::class, 'create']);
+Route::post('/vehicles/create', [VehicleController::class, 'store']);
+Route::get('/vehicles/{id}/edit', [VehicleController::class, 'edit']);
+Route::put('/vehicles/{id}/edit', [VehicleController::class, 'update'])->name('vehicle.update');
+
 
 
 
