@@ -167,7 +167,9 @@ class VehicleController extends Controller
         $vehicle = Vehicle::find($id);
 
         //Checks if old vehicle model needs to be deleted
-        $this->deleteOldModelIfNeeded($vehicle);
+        if($vehicleModel->wasRecentlyCreated) {
+            $this->deleteOldModelIfNeeded($vehicle);
+        }
 
         $vehicle->update(
             [
