@@ -164,8 +164,12 @@ class VehicleController extends Controller
             ['manufacturer_name' => $data['vehicleModel']['manufacturer_name'], 'model_name' => $data['vehicleModel']['model_name']],
         );
 
-        Vehicle::find($id)
-            ->update(
+        $vehicle = Vehicle::find($id);
+
+        //Checks if old vehicle model needs to be deleted
+        $this->deleteOldModelIfNeeded($vehicle);
+
+        $vehicle->update(
             [
                 'plates' => $data['plates'],
                 'model_id' => $vehicleModel->id,
@@ -186,15 +190,20 @@ class VehicleController extends Controller
     public function destroy($id)
     {
         $vehicle = Vehicle::find($id);
-        $vehiclesWithSameModels = Vehicle::where('model_id', '=', $vehicle->model_id)->count();
+
+        //Checks if old vehicle model needs to be deleted
+        $this->deleteOldModelIfNeeded($vehicle);
 
         $vehicle->delete();
 
-        if ($vehiclesWithSameModels <= 1) {
+        return Redirect::to('/')->with('success', 'Transporto priemonė ' . $vehicle['plates'] . ' pašalinta.');
+    }
+
+    public function deleteOldModelIfNeeded($vehicle)
+    {
+        if(Vehicle::where('model_id', '=', $vehicle->model_id)->count() <= 1){
             $model = VehicleModel::find($vehicle->model_id);
             $model->delete();
         }
-
-        return Redirect::to('/')->with('success', 'Transporto priemonė ' . $vehicle['plates'] . ' pašalinta.');
     }
 }
